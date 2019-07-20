@@ -10,14 +10,18 @@ contract Election{
 
   mapping(uint => Candidate) public candidates;
   uint public cancount;
+  string public test;
 
   constructor() public{
+    cancount = 0;
+    test = "Salad ass";
+    newCandidate(test);
     newCandidate("Black Donald Trump");
     newCandidate("Keanu Reaves");
   }
 
   function newCandidate(string memory _name) private{
-    cancount ++;
+    cancount++;
     candidates[cancount] = Candidate(cancount, _name, 0);
   }
 }
