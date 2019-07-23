@@ -13,15 +13,21 @@ contract Election{
   string public test;
 
   constructor() public{
-    cancount = 0;
-    test = "Salad ass";
-    newCandidate(test);
-    newCandidate("Black Donald Trump");
+    newCandidate("Salad Ass");
+    0newCandidate("Black Donald Trump");
     newCandidate("Keanu Reaves");
+    vote(1);
+    vote(1);
   }
 
+
+
   function newCandidate(string memory _name) private{
-    cancount++;
     candidates[cancount] = Candidate(cancount, _name, 0);
+    cancount++;
+  }
+
+  function vote(uint _id) public{
+    candidates[_id].votes++;
   }
 }
