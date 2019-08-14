@@ -13,6 +13,7 @@ contract Election{
   uint public cancount;
   string public test;
 
+
   constructor() public{
     newCandidate("Salad Ass");
     newCandidate("Black Donald Trump");
@@ -23,7 +24,7 @@ contract Election{
     return true;
   }
 
-  function castVote(uint vid, uint cid) public returns(string){
+  function castVote(uint vid, uint cid) public returns(string memory){
     if (verifyVoter(vid) == false){
       return "Not a valid Voter ID";
     }
@@ -34,7 +35,7 @@ contract Election{
       }
       else{
         voted[vid] = true;
-        addVote(cid);
+        vote(cid);
         return "Your vote has been recorded successfully";
       }
     }
@@ -45,8 +46,7 @@ contract Election{
     cancount++;
   }
 
-  function addVote(uint _id) private{
+  function vote(uint _id) public{
     candidates[_id].votes++;
   }
-
 }

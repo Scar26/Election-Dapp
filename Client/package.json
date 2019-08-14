@@ -2,14 +2,13 @@
   "name": "client",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
-    "web3": "github:ethereum/web3.js"
+    "web3": "^1.2.1"
   }
 }
