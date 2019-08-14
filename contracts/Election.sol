@@ -12,11 +12,32 @@ contract Election{
   mapping(uint => Candidate) public candidates;
   uint public cancount;
   string public test;
-  
+
   constructor() public{
     newCandidate("Salad Ass");
     newCandidate("Black Donald Trump");
     newCandidate("Keanu Reaves");
+  }
+
+  function verifyVoter(uint voterid) private returns(bool){
+    return true;
+  }
+
+  function castVote(uint vid, uint cid) public returns(string){
+    if (verifyVoter(vid) == false){
+      return "Not a valid Voter ID";
+    }
+
+    else{
+      if(voted[vid] == true){
+        return "Specified user has already voted once";
+      }
+      else{
+        voted[vid] = true;
+        addVote(cid);
+        return "Your vote has been recorded successfully";
+      }
+    }
   }
 
   function newCandidate(string memory _name) private{
@@ -24,11 +45,8 @@ contract Election{
     cancount++;
   }
 
-  function vote(uint _id) public{
+  function addVote(uint _id) private{
     candidates[_id].votes++;
   }
 
-  function debug() public returns(uint256) {
-    return 69;
-  }
 }
