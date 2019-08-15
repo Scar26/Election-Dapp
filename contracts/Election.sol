@@ -3,21 +3,32 @@ pragma solidity ^0.5.0;
 contract Election{
 
   struct Candidate{
-    uint id;
+    uint32 id;
     string name;
     uint votes;
+    uint16 constituency; // The constituency that candidate is running for
+  }
+
+  struct Constituency{
+    uint16 id;
+    string name;
+    uint64[] cans; //will hold the IDs of all candidates for that constituency
   }
 
   mapping(uint => bool) private voted;
+  mapping(uint => Constituency) public constituencies;
   mapping(uint => Candidate) public candidates;
-  uint public cancount;
+  uint32 public cancount = 1;
+  uint16 public concount;
   string public test;
-
+  uint32[] public testarray = [1,2,3];
 
   constructor() public{
-    newCandidate("Salad Ass");
-    newCandidate("Black Donald Trump");
-    newCandidate("Keanu Reaves");
+    newConstituency("Bikini Bottom");
+    constituencies[0].cans = [1,2,3];
+    newCandidate("Salad Ass", 0);
+    newCandidate("Black Donald Trump", 0);
+    newCandidate("Keanu Reaves", 0);
   }
 
   function verifyVoter(uint voterid) private returns(bool){
@@ -30,23 +41,27 @@ contract Election{
     }
 
     else{
-      if(voted[vid] == true){
-        return "Specified user has already voted once";
-      }
-      else{
+      if(voted[vid] != true){
         voted[vid] = true;
-        vote(cid);
-        return "Your vote has been recorded successfully";
+        recordVote(cid);
       }
-    }
+      return "Your vote has been recorded successfully";
+  }
+}
+
+  function newConstituency(string memory _name) private{
+    uint64[] memory tmp;
+    constituencies[concount] = Constituency(concount, _name, tmp);
+    concount++;
   }
 
-  function newCandidate(string memory _name) private{
-    candidates[cancount] = Candidate(cancount, _name, 0);
+  function newCandidate(string memory _name, uint16 c_id) private{
+    candidates[cancount] = Candidate(cancount, _name, 0, c_id);
+    constituencies[c_id].cans.push(cancount);
     cancount++;
   }
 
-  function vote(uint _id) public{
+  function recordVote(uint _id) private{
     candidates[_id].votes++;
   }
 }
