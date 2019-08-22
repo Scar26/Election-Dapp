@@ -54,15 +54,18 @@ election = new web3.eth.Contract(abiobj, contract_addr , {from : defaultAccount}
 console.log('web3 initialized');
 constituencies = JSON.parse(fs.readFileSync('constituencies.json')); //We decided to go with json for storing the constituencies list because it will be faster to have the entire tree as a state variable of the server, and this is all public information anyway.
 concount = constituencies.length;
+console.log(constituencies);
+console.log(concount);
 app.post('/getcans',function(req,res){
     if(typeof req.body.pin == 'string'){
       pin = req.body.pin;
       if(parseInt(pin)>=0){
         console.log('request ayi');
         console.log(pin);
-        index = -1
+        index = -1;
         for(i=0;i<concount;i++){
-          if(constituencies[i]==pin.toString()){
+          console.log(constituencies[i].id);
+          if(constituencies[i].id.toString()==pin.toString()){
             index = i;
             break;
           }
@@ -70,7 +73,7 @@ app.post('/getcans',function(req,res){
         if(index == -1){
           res.status(400).send("Uh oh something went wrong");
         }
-        res.send(JSON.stringify(constituencies[parseInt(pin)]));
+        res.send(JSON.stringify(constituencies[index]));
       }
   }
   else{
@@ -79,6 +82,9 @@ app.post('/getcans',function(req,res){
 });
 
 app.post('/voteapi',function(req,res){
+  obj = JSON.parse(decrypt(req.body.data,secert));
+  var vid = obj.vid;
+  var cid = obj.cid;
   election.methods.castVote(78, 1).send({from : defaultAccount},function(e,r){ console.log(r) });
 });
 
@@ -96,21 +102,14 @@ async function queryContainer(val) {
  };
 
  const { resources } = await client.database('voters').container('voters').items.query(querySpec, {enableCrossPartitionQuery:true}).fetchAll();
- result = resources[0].name;
- console.log(result);
- return result.name;
+ console.log(resources[0].name);
+ result = resources[0];
+ return result;
 };
 
 app.post('/verify',function(req,res){
   var vid = req.body.vid;
   var con = req.body.con;
   details = queryContainer(vid);
-  console.log(details)
-  res.send(details);
-  // if(details.pincode==con){
-  //   res.send("True");
-  // }
-  // else{
-  //   res.send("False")
-  // }
+
 });
