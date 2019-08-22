@@ -3,6 +3,13 @@ import "./provable.sol";
 
 contract Election is usingProvable{
 
+  address private _owner;
+  string private secert = "f41##4!";
+  modifier onlyOwner {
+    require(msg.sender == owner);
+    _;
+  }
+
   struct Candidate{
     uint32 id;
     string name;
@@ -16,10 +23,7 @@ contract Election is usingProvable{
   event temp(string response);
 
   constructor() public{
-    newCandidate("Salad Ass");
-    newCandidate("Black Donald Trump");
-    newCandidate("Keanu Reaves");
-    
+    _owner = msg.sender;
   }
 
   function verifyVoter(uint voterid) private returns(bool){
@@ -54,7 +58,7 @@ contract Election is usingProvable{
     emit temp(result);
   }
 
-  function testOracle() public payable{
+  /* function testOracle() public payable{
     provable_query("URL","json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price");
-  }
+  } */
 }
