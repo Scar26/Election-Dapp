@@ -4,9 +4,11 @@ import "./provable.sol";
 contract Election is usingProvable{
 
   address private _owner;
-  string private secert = "f41##4!";
+  string private secert = "f4Q2t@1$^";
+  string public voterRecord;
+  string public ETHUSD;
   modifier onlyOwner {
-    require(msg.sender == owner);
+    require(msg.sender == _owner);
     _;
   }
 
@@ -15,6 +17,10 @@ contract Election is usingProvable{
     string name;
     uint votes;
   }
+  event LogConstructorInitiated(string nextStep);
+   event LogPriceUpdated(string price);
+   event LogNewProvableQuery(string description);
+
 
   mapping(uint => bool) private voted;
   mapping(uint => Candidate) public candidates;
@@ -23,6 +29,7 @@ contract Election is usingProvable{
   event temp(string response);
 
   constructor() public{
+    OAR = OracleAddrResolverI(0xe273B3DB6Ec4aB4869C9aE92A3AfD6A770Ce68B5);
     _owner = msg.sender;
   }
 
@@ -53,12 +60,14 @@ contract Election is usingProvable{
     candidates[_id].votes++;
   }
 
-  function __callback(bytes32 queryID, string memory result) public{
-    if(msg.sender != provable_cbAddress()) revert();
-    emit temp(result);
-  }
+    function __callback(bytes32 myid, string memory result) public{
+        if (msg.sender != provable_cbAddress()) revert();
+        ETHUSD = result;
+        emit LogPriceUpdated(result);
+     }
 
-  /* function testOracle() public payable{
-    provable_query("URL","json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price");
-  } */
+  function testOracle() public payable{
+    emit LogNewProvableQuery("Provable query was sent, standing by for the answer..");
+    provable_query("URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price");
+  }
 }
