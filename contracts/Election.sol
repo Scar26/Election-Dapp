@@ -42,7 +42,7 @@ contract Election{
     candidates[_id].votes++;
   }
 
-  function concludeElection() onlyOwner private returns(bool success) {
+  function concludeElection() onlyOwner public returns(bool success) {
   _owner = address(0);
   return true;
 }

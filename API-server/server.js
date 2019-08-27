@@ -13,13 +13,13 @@ const endpoint = config.endpoint;
 const key = config.key;
 const request = require('request')
 
-const IV_LENGTH = 16; // For AES, this is always 16
+const IV_LENGTH = 16; 
 const secert = 'm1cr0s0ft_z1nd4b4d_h3nt41_h4v3n_';
-function encrypt(text, ENCRYPTION_KEY) {
+function encrypt(text, ENCRYPTION_KEY) { //AES 256 in CBC mode
    let iv = crypto.randomBytes(IV_LENGTH);
    let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
    let encrypted = cipher.update(text);
-
+   AES
    encrypted = Buffer.concat([encrypted, cipher.final()]);
 
    return iv.toString('hex') + ':' + encrypted.toString('hex');
@@ -37,6 +37,8 @@ function decrypt(text, ENCRYPTION_KEY) {
  return decrypted.toString();
 }
 
+setTimeout(function(){election.methods.concludeElection(parseInt(vid.substr(0,12),16), cid).send({from : defaultAccount},function(e,r){ console.log("Voting Period ends") });},17280000)
+
 server.listen(process.env.PORT || 2050);
 console.log("Server listening on port 2050...");
 
@@ -49,15 +51,13 @@ abi = '[  {    "constant": true,    "inputs": [      {        "name": "",       
 
 abiobj = JSON.parse(abi);
 var defaultAccount = '0xEcebc654DC57ee532a63Ea6F2634D186963E7b24'; // Has to be updated according to the local blockchain
-var contract_addr = '0xA14b545a3d710c04bb8B6607f76287c86D7977C1'; //Has to be updated everytime the contract is migrated, can be obtained via Election.deployed().address in the truffle console
+var contract_addr = '0x235b67b82a0b389E6D042aFc1595b357c0A66753'; //Has to be updated everytime the contract is migrated, can be obtained via Election.deployed().address in the truffle console
 election = new web3.eth.Contract(abiobj, contract_addr , {from : defaultAccount});
 
 console.log('web3 initialized');
 constituencies = JSON.parse(fs.readFileSync('constituencies.json')); //We decided to go with json for storing the constituencies list because it will be faster to have the entire tree as a state variable of the server, and this is all public information anyway.
-// allowed_machines = JSON.parse(fs.readFileSync('ips.json')); //list of whitelisted ips
+allowed_machines = JSON.parse(fs.readFileSync('ips.json')); //list of whitelisted ips
 concount = constituencies.length;
-console.log(constituencies);
-console.log(concount);
 
 function verify(v,f) {
 	console.log("Verify")
@@ -88,11 +88,8 @@ app.post('/getcans',function(req,res){
     if(typeof req.body.pin == 'string'){
       pin = req.body.pin;
       if(parseInt(pin)>=0){
-        console.log('request ayi');
-        console.log(pin);
         index = -1;
         for(i=0;i<concount;i++){
-          console.log(constituencies[i].id);
           if(constituencies[i].id.toString()==pin.toString()){
             index = i;
             break;
@@ -110,19 +107,38 @@ app.post('/getcans',function(req,res){
 });
 
 app.post('/voteapi',function(req,res){
-  // if(allowed_machines.includes(request.connection.remoteAddress.toString())){
+  if(allowed_machines.includes(request.connection.remoteAddress.toString())){
     vid = JSON.parse(decrypt(req.body.data,secert)).vid;
     cid = JSON.parse(decrypt(req.body.data,secert)).cid;
     var md5sum = crypto.createHash('md5');
-    md5sum.update(cid);
-    cid = md5sum.digest('hex');
-    m5sum = null;
+    md5sum.update(vid);
+    vid = md5sum.digest('hex');
+    md5sum = null;
     fprint = JSON.parse(decrypt(req.body.data,secert)).fprint;
-    election.methods.castVote(vid, cid).send({from : defaultAccount},function(e,r){ console.log(r) });
     details = queryContainer(vid);
     verification = verify(vid,fprint);
-   // }
-  // else{
-  //   res.status(404).send("Something went wrong");
-  // }
+    if(verification){
+      election.methods.castVote(parseInt(vid.substr(0,12),16), cid).send({from : defaultAccount},function(e,r){ console.log(r) });
+    }
+   }
+  else{
+    res.status(404).send("Something went wrong");
+  }
+});
+
+app.post('/updates',function(req,res){
+  if(parseInt(req.body.con)>=0){
+    for(i=0;i<concount;i++){
+      if(constituencies[i].id == req.body.con){
+        con = constituencies[i];
+        break;
+      }
+    }
+    var cans = [];
+    for(i=0;i<con.candidates.length){
+      c = election.methods.candidates(con.candidates[i].id).call({from : defaultAccount},function(e,r){ return r });
+      candidates.push(c);
+    }
+    res.send(JSON.stringify(candidates));
+  }
 });
